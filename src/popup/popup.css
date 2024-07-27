@@ -1,0 +1,81 @@
+body {
+  min-width: 300px;
+}
+
+button {
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+}
+
+table,
+td,
+th {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+td,
+th {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+th {
+  text-align: left;
+}
+th.actions {
+  text-align: center;
+}
+th.actions:before {
+  content: "⚡️";
+}
+
+td.actions {
+  text-align: center;
+}
+td.actions button.delete {
+  background: transparent;
+  border: none;
+  display: inline-block;
+  padding: 0;
+}
+td.actions button.delete:before {
+  content: "🗑️";
+}
+td.actions button.delete:hover {
+  background: transparent;
+  border: none;
+}
+
+.loading {
+  cursor: default;
+  pointer-events: none;
+}
+.loading:after {
+  content: "...";
+}
+
+#start-recording {
+  display: none;
+}
+
+#stop-recording {
+  display: none;
+}
+
+#storage-local-view {
+  font-family: monospace;
+  font-size: 120%;
+  border: 1px solid black;
+  display: none;
+  max-height: 300px;
+  overflow: scroll;
+  padding: 8px;
+}
+
+#recordings-table {
+  margin-top: 10px;
+}

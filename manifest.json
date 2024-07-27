@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "NetDet",
+  "version": "1.0.0",
+  "description": "Network detective",
+  "icons": {
+    "16": "assets/icon16.png",
+    "24": "assets/icon24.png",
+    "32": "assets/icon32.png",
+    "64": "assets/icon64.png",
+    "128": "assets/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html" 
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "webRequest",
+    "cookies",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}
