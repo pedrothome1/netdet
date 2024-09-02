@@ -5,6 +5,7 @@
   const btnStart = document.querySelector("#start-recording")
   const btnStop = document.querySelector("#stop-recording")
   const btnShowStorageLocal = document.querySelector("#show-storage-local")
+  const textareaUrlPatterns = document.querySelector("#url-patterns")
   const storageLocalPre = document.querySelector("#storage-local-view")
   const recordingsTable = document.querySelector("#recordings-table")
 
@@ -14,26 +15,53 @@
     const dateTimeTd = document.createElement("td")
     const requestsTd = document.createElement("td")
     const actionsTd = document.createElement("td")
+    const curlBtn = document.createElement("button")
     const deleteBtn = document.createElement("button")
 
     tr.appendChild(dateTimeTd)
     tr.appendChild(requestsTd)
     tr.appendChild(actionsTd)
+    actionsTd.appendChild(curlBtn)
     actionsTd.appendChild(deleteBtn)
 
     requestsTd.classList.add("requests")
     actionsTd.classList.add("actions")
+    curlBtn.classList.add("curl")
     deleteBtn.classList.add("delete")
 
     tr.dataset.key = dateTime
+    curlBtn.dataset.key = dateTime
     deleteBtn.dataset.key = dateTime
 
     dateTimeTd.textContent = dateTime
     requestsTd.textContent = requestCount
 
+    curlBtn.addEventListener("click", async (event) => {
+      const {[curlBtn.dataset.key]: recording} = await chrome.storage.local.get(curlBtn.dataset.key)
+      console.log(recording)
+
+      const curlRequests = []
+      for (const req of recording.requests) {
+        const curl = [`curl -vsL -X${req.method}`]
+        for (const header of req.requestHeaders) {
+          curl.push(`-H '${header.name}: ${header.value}'`)
+        }
+        if (req.requestBody) {
+          curl.push(`-d '${JSON.stringify(req.requestBody)}'`)
+        }
+        curl.push(`'${req.url}'`)
+
+        curlRequests.push(curl.join(" \\\n"))
+      }
+
+      navigator.clipboard.writeText(curlRequests.join("\n\n"))
+    })
+
     deleteBtn.addEventListener("click", (event) => {
-      const btn = event.target
-      chrome.storage.local.remove(btn.dataset.key)
+      if (confirm("Are you sure?")) {
+        const btn = event.target
+        chrome.storage.local.remove(btn.dataset.key)
+      }
     })
 
     return tr
@@ -59,12 +87,23 @@
   btnShowStorageLocal.addEventListener("click", async (event) => {
     btnShowStorageLocal.classList.add("loading")
 
-    const allContent = await chrome.storage.local.get(null)
-    const jsonStr = JSON.stringify(allContent, null, 2)
+    if (storageLocalPre.style.display !== "block") {
+      const allContent = await chrome.storage.local.get()
+      const jsonStr = JSON.stringify(allContent, null, 2)
 
-    storageLocalPre.textContent = jsonStr
-    storageLocalPre.style.display = "block"
+      storageLocalPre.textContent = jsonStr
+      storageLocalPre.style.display = "block"
+    } else {
+      storageLocalPre.style.display = "none"
+    }
+
     btnShowStorageLocal.classList.remove("loading")
+  })
+
+  textareaUrlPatterns.addEventListener("blur", (event) => {
+    chrome.storage.local.set({
+      urlPatterns: textareaUrlPatterns.value.split("\n").map(x => x.trim()).filter(x => !!x),
+    })
   })
 
   const handleRecordingChange = (isRecording) => {
@@ -76,7 +115,6 @@
   }
 
   const handleRecordingEntryChange = (key, oldValue, newValue) => {
-    console.log(key, oldValue, newValue)
     if (!newValue) {
       document.querySelector(`tr[data-key='${key}']`).remove()
       return
@@ -103,7 +141,6 @@
       // a recording entry
       if (recordingKeyPattern.test(key)) {
         handleRecordingEntryChange(key, oldValue, newValue)
-        continue
       }
     }
   })
@@ -123,4 +160,6 @@
       handleRecordingEntryChange(key, null, val)
     }
   })
+
+  textareaUrlPatterns.value = allContent.urlPatterns.join("\n")
 })()

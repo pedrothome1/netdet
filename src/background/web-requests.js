@@ -3,13 +3,13 @@ import config from "./config"
 const trips = {}
 
 export const onBeforeRequest = (details) => {
-  trips[details.requestId] = {}
-
-  trips[details.requestId].method = details.method
-  trips[details.requestId].url = details.url
-  trips[details.requestId].requestBody = details.requestBody
-  trips[details.requestId].type = details.type
-  trips[details.requestId].timeStamp = details.timeStamp
+  trips[details.requestId] = {
+    method: details.method,
+    url: details.url,
+    requestBody: details.requestBody,
+    type: details.type,
+    timeStamp: details.timeStamp,
+  }
 }
 
 export const onBeforeSendHeaders = (details) => {
